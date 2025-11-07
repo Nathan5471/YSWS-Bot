@@ -2,16 +2,19 @@
   "name": "ysws-bot",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "bot.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node dist/bot.js",
+    "dev": "ts-node src/bot.ts",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "discord.js": "^14.24.2"
+    "discord.js": "^14.24.2",
+    "dotenv": "^17.2.3"
   },
   "devDependencies": {
     "@types/node": "^24.10.0",
