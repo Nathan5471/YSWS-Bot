@@ -12,7 +12,10 @@ import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 import mongoose from "mongoose";
-import "./schedulers/yswsDetector";
+import cron from "node-cron";
+import yswsDetector from "./schedulers/yswsDetector";
+import { YSWSType } from "./models/ysws";
+import Notification from "./models/notification";
 
 dotenv.config();
 
@@ -146,3 +149,34 @@ mongoose
   .catch((error) => {
     console.error("Error connecting to MongoDB:", error);
   });
+
+cron.schedule("* * * * *", async () => {
+  const newYSWSs = (await yswsDetector()) as YSWSType[];
+  if (!newYSWSs || newYSWSs.length === 0) {
+    console.log("No new YSWS entries detected.");
+    return;
+  }
+  const notifications = await Notification.find();
+  for (const notification of notifications) {
+    const guild = await client.guilds.fetch(notification.guildId);
+    if (!guild) {
+      console.warn(`Guild not found: ${notification.guildId}`);
+      continue;
+    }
+    const channel = await guild.channels.fetch(notification.channelId);
+    if (!channel || !channel.isTextBased()) {
+      console.warn(
+        `Channel not found or is not text-based: ${notification.channelId} in guild ${notification.guildId}`
+      );
+      continue;
+    }
+    for (const ysws of newYSWSs) {
+      await channel.send(
+        `**${ysws.title}**\n${ysws.link}\n${ysws.description}`
+      );
+    }
+    console.log(
+      `Sent ${newYSWSs.length} new YSWS notifications to guild ${guild.id}`
+    );
+  }
+});

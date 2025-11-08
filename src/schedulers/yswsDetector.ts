@@ -1,11 +1,9 @@
-import cron from "node-cron";
 import parseRSSFeed from "../utils/parseRSSFeed";
 import YSWS from "../models/ysws";
 
-cron.schedule("* * * * *", async () => {
-  // Runs every 30 minutes
-
+const yswsDetector = async () => {
   const rssFeedUrl = "https://ysws.hackclub.com/feed.xml";
+  const newItems: any[] = [];
   try {
     const items = await parseRSSFeed(rssFeedUrl);
     for (const item of items) {
@@ -42,10 +40,13 @@ cron.schedule("* * * * *", async () => {
         });
         await newYSWS.save();
         console.log(`New YSWS entry saved: ${item.title}`);
-        // TODO: Implement notifying through the Discord bot
+        newItems.push(newYSWS);
       }
     }
+    return newItems;
   } catch (error) {
     console.error(`YSWS Detector Error: ${error}`);
   }
-});
+};
+
+export default yswsDetector;
