@@ -21,7 +21,6 @@ cron.schedule("* * * * *", async () => {
         );
         continue;
       }
-      // content contains a combination of "\n" and "<p>" tags with +s.
       const parsedContent = item.content
         .replace(/\n+/g, " ")
         .replace(/<p>/g, " ")
@@ -29,10 +28,22 @@ cron.schedule("* * * * *", async () => {
         .replace(/<strong>/g, " ")
         .replace(/<\/strong>/g, " ")
         .trim();
-      const splitContent = parsedContent.split("                       ");
-      console.log("Split content:", splitContent);
-      console.log("Parsed content:", parsedContent);
-      continue;
+      const splitContent = parsedContent.split(/\s{3,}/g).map((s) => s.trim());
+      const finalContent = splitContent.join("\n");
+
+      const existingEntry = await YSWS.findOne({ guid: item.guid });
+      if (!existingEntry) {
+        const newYSWS = new YSWS({
+          title: item.title,
+          link: item.link,
+          guid: item.guid,
+          pubDate: new Date(item.pubDate),
+          description: finalContent,
+        });
+        await newYSWS.save();
+        console.log(`New YSWS entry saved: ${item.title}`);
+        // TODO: Implement notifying through the Discord bot
+      }
     }
   } catch (error) {
     console.error(`YSWS Detector Error: ${error}`);
