@@ -14,7 +14,7 @@ import path from "path";
 import mongoose from "mongoose";
 import cron from "node-cron";
 import yswsDetector from "./schedulers/yswsDetector";
-import { YSWSType } from "./models/ysws";
+import YSWS, { YSWSType } from "./models/ysws";
 import Notification from "./models/notification";
 
 dotenv.config();
@@ -150,12 +150,10 @@ mongoose
     console.error("Error connecting to MongoDB:", error);
   });
 
-cron.schedule("* * * * *", async () => {
+cron.schedule("*/15 * * * *", async () => {
+  // Runs every 15 minutes
+  const allYSWSs = await YSWS.find({});
   const newYSWSs = (await yswsDetector()) as YSWSType[];
-  if (!newYSWSs || newYSWSs.length === 0) {
-    console.log("No new YSWS entries detected.");
-    return;
-  }
   const notifications = await Notification.find();
   for (const notification of notifications) {
     const guild = await client.guilds.fetch(notification.guildId);
@@ -170,13 +168,22 @@ cron.schedule("* * * * *", async () => {
       );
       continue;
     }
-    for (const ysws of newYSWSs) {
-      await channel.send(
-        `**${ysws.title}**\n${ysws.link}\n${ysws.description}`
-      );
+    if (notification.pastSent) {
+      for (const ysws of newYSWSs) {
+        await channel.send(
+          `**${ysws.title}**\n${ysws.description}\n<${ysws.link}>`
+        );
+      }
+    } else {
+      for (const ysws of allYSWSs) {
+        await channel.send(
+          `**${ysws.title}**\n${ysws.description}\n<${ysws.link}>`
+        );
+        await Notification.updateOne(
+          { guildId: notification.guildId },
+          { pastSent: true }
+        );
+      }
     }
-    console.log(
-      `Sent ${newYSWSs.length} new YSWS notifications to guild ${guild.id}`
-    );
   }
 });
