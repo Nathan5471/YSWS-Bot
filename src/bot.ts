@@ -4,12 +4,15 @@ import {
   Events,
   GatewayIntentBits,
   MessageFlags,
+  PresenceUpdateStatus,
   REST,
   Routes,
 } from "discord.js";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
+import mongoose from "mongoose";
+import "./schedulers/yswsDetector";
 
 dotenv.config();
 
@@ -92,13 +95,7 @@ client.once(Events.ClientReady, async (readyClient) => {
   console.log("Commands deployed globally.");
 
   client.user?.setPresence({
-    status: "online",
-    activities: [
-      {
-        name: "YSWS Bot",
-        type: 0,
-      },
-    ],
+    status: PresenceUpdateStatus.Online,
   });
 
   console.log("Presence set.");
@@ -133,3 +130,19 @@ client.on(Events.InteractionCreate, async (interaction) => {
 });
 
 client.login(token);
+
+const mongooseURL = process.env.MONGODB_URL;
+if (!mongooseURL) {
+  throw new Error(
+    "MONGODB_URL is not defined in .env. See .env.example for reference."
+  );
+}
+
+mongoose
+  .connect(mongooseURL)
+  .then(() => {
+    console.log("Connected to MongoDB");
+  })
+  .catch((error) => {
+    console.error("Error connecting to MongoDB:", error);
+  });

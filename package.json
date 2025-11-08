@@ -14,7 +14,10 @@
   "type": "commonjs",
   "dependencies": {
     "discord.js": "^14.24.2",
-    "dotenv": "^17.2.3"
+    "dotenv": "^17.2.3",
+    "mongoose": "^8.19.3",
+    "node-cron": "^4.2.1",
+    "rss-parser": "^3.13.0"
   },
   "devDependencies": {
     "@types/node": "^24.10.0",
