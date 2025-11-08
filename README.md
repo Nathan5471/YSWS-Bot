@@ -13,6 +13,7 @@ YSWS Bot is a Discord bot that is used to notify you when a new You Ship We Ship
 ## Issues
 
 Right now I don't interpret the `<a>` tag and anyone can run /setchannel, so it's not super secure.
+The bot only send messages every 15 minutes, so once you set the channel it will take up to 15 minutes for all of the notifications to be sent with the other checks.
 
 ## Commands
 

@@ -33,7 +33,7 @@ const folderPath = path.join(__dirname, "commands");
 
 const commandFiles = fs
   .readdirSync(folderPath)
-  .filter((file) => file.endsWith(".ts"));
+  .filter((file) => file.endsWith(".ts") || file.endsWith(".js"));
 for (const file of commandFiles) {
   const filePath = path.join(folderPath, file);
   import(filePath).then((command) => {
@@ -65,7 +65,7 @@ const deployCommands = async () => {
     const commands = [];
     const commandFiles = fs
       .readdirSync(path.join(__dirname, "commands"))
-      .filter((file) => file.endsWith(".ts"));
+      .filter((file) => file.endsWith(".ts") || file.endsWith(".js"));
 
     for (const file of commandFiles) {
       const command = await import(`./commands/${file}`);
